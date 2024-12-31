@@ -5,30 +5,35 @@ import os
 import cv2
 
 def process_with_params(video, camera_name):
-    detector = AccidentDetector()
-    # Use fixed low confidence threshold of 0.25
-    video_output, alert, crops = detector.process_video(video, camera_name, 0.25)
-    
-    # Process and enhance crops
-    enhanced_crops = []
-    for crop_path in crops:
-        if crop_path is not None:
-            # Read image
-            img = cv2.imread(crop_path)
-            # Enhance
-            enhanced = detector.enhance_crop(img)
-            # Save back
-            cv2.imwrite(crop_path, enhanced)
-            enhanced_crops.append(crop_path)
-        else:
-            enhanced_crops.append(None)
-    
-    # Unpack enhanced crops
-    crop1 = enhanced_crops[0] if enhanced_crops and len(enhanced_crops) > 0 else None
-    crop2 = enhanced_crops[1] if enhanced_crops and len(enhanced_crops) > 1 else None
-    crop3 = enhanced_crops[2] if enhanced_crops and len(enhanced_crops) > 2 else None
-    
-    return video_output, alert, crop1, crop2, crop3
+    detector = None
+    try:
+        detector = AccidentDetector()
+        # Use fixed low confidence threshold of 0.25
+        video_output, alert, crops = detector.process_video(video, camera_name, 0.25)
+        
+        # Process and enhance crops
+        enhanced_crops = []
+        for crop_path in crops:
+            if crop_path is not None:
+                # Read image
+                img = cv2.imread(crop_path)
+                # Enhance
+                enhanced = detector.enhance_crop(img)
+                # Save back
+                cv2.imwrite(crop_path, enhanced)
+                enhanced_crops.append(crop_path)
+            else:
+                enhanced_crops.append(None)
+        
+        # Unpack enhanced crops
+        crop1 = enhanced_crops[0] if enhanced_crops and len(enhanced_crops) > 0 else None
+        crop2 = enhanced_crops[1] if enhanced_crops and len(enhanced_crops) > 1 else None
+        crop3 = enhanced_crops[2] if enhanced_crops and len(enhanced_crops) > 2 else None
+        
+        return video_output, alert, crop1, crop2, crop3
+    finally:
+        if detector:
+            detector.clean_memory()
 
 def main():
     os.makedirs("temp", exist_ok=True)
@@ -70,7 +75,7 @@ def main():
         iface.launch(
             server_name="0.0.0.0",
             server_port=7865,
-            share=True,
+            share=False,
             debug=True
         )
     except Exception as e:

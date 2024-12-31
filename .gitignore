@@ -40,6 +40,9 @@ ENV/
 models/weights/*.pt
 models/weights/*.onnx
 !models/weights/.gitkeep
+*.onnx
+*.pt
+*.torchscript
 
 # Dataset
 data/raw/
