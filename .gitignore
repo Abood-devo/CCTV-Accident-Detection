@@ -28,6 +28,7 @@ ENV/
 # Jupyter Notebook
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
+notebooks/runs
 
 # VS Code
 .vscode/
