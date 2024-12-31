@@ -8,17 +8,22 @@ from collections import deque
 import numpy as np
 import torch
 import gc
-
+import random
+import glob
 
 class AccidentDetector:
     def __init__(self, model_path='models/mustafa/best3.pt'):
         self.model = YOLO(model_path)
         self.base_path = "incidents"
+        self.audio_dir = "src/assets/audio/"
+        
         # Filter accident classes
         self.accident_classes = [
             name for name in self.model.names.values() 
             if name.endswith('_accident')
         ]
+        
+        os.makedirs(self.audio_dir, exist_ok=True)
         os.makedirs(self.base_path, exist_ok=True)
         
     def clean_memory(self):  # Fixed spelling
@@ -39,6 +44,13 @@ class AccidentDetector:
         os.makedirs(path, exist_ok=True)
         return path
         
+    def get_random_alert_sound(self):
+        """Returns random audio file path from assets/audio directory"""
+        audio_files = glob.glob(os.path.join(self.audio_dir, "*.mp3"))
+        if not audio_files:
+            return None
+        return random.choice(audio_files)
+    
     def process_video(self, video_path, camera_name, conf_threshold=0.25):
         try:
             cap = cv2.VideoCapture(video_path)
@@ -156,14 +168,15 @@ class AccidentDetector:
                 # Prepare alert message
                 alert = f"⚠️ ALERT: Accident detected by camera {camera_name}!\n"
                 alert += f"\nIncident recorded at: {metadata['timestamp']}"
+                alert_audio = self.get_random_alert_sound()
                 for i, det in enumerate(top_3):
                     alert += f"\n\nDetection {i+1}:"
                     alert += f"\n  Time: {det['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"
                     alert += f"\n  Confidence: {det['confidence']*100:.1f}%"
+
+                return output_path, alert, crops, alert_audio
                 
-                return output_path, alert, crops
-                
-            return output_path, "", [None, None, None]
+            return output_path, "", [None, None, None], None
         finally:
             # Cleanup resources
             if 'cap' in locals():

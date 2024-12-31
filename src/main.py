@@ -9,7 +9,7 @@ def process_with_params(video, camera_name):
     try:
         detector = AccidentDetector()
         # Use fixed low confidence threshold of 0.25
-        video_output, alert, crops = detector.process_video(video, camera_name, 0.25)
+        video_output, alert, crops, audio_alert = detector.process_video(video, camera_name, 0.25)
         
         # Process and enhance crops
         enhanced_crops = []
@@ -30,52 +30,48 @@ def process_with_params(video, camera_name):
         crop2 = enhanced_crops[1] if enhanced_crops and len(enhanced_crops) > 1 else None
         crop3 = enhanced_crops[2] if enhanced_crops and len(enhanced_crops) > 2 else None
         
-        return video_output, alert, crop1, crop2, crop3
+        return video_output, alert, crop1, crop2, crop3, audio_alert
     finally:
         if detector:
             detector.clean_memory()
 
 def main():
-    os.makedirs("temp", exist_ok=True)
-    
-    with gr.Blocks(title="Accident Detection System") as iface:
+    with gr.Blocks() as iface:
         gr.Markdown("# CCTV Accident Detection System")
         
         with gr.Row():
-            with gr.Column():
-                camera_name = gr.Textbox(
-                    label="Camera Location/Name",
-                    placeholder="e.g. Interstate-95 North Mile 67",
-                    value="CCTV-001"
-                )
-                video_input = gr.Video(label="Input Video")
-                
-        with gr.Row():
-            with gr.Column():
-                video_output = gr.Video(label="Processed Video")
-                alert_output = gr.Textbox(
-                    label="Emergency Alert",
-                    interactive=False,
-                    lines=10
-                )
-                gr.Markdown("### Accident Images")
-                with gr.Row():
-                    crop_1 = gr.Image(label="Highest Confidence")
-                    crop_2 = gr.Image(label="Second Highest")
-                    crop_3 = gr.Image(label="Third Highest")
+            video_input = gr.Video(label="Input Video")
+            camera_name = gr.Textbox(label="Camera Name")
         
+        with gr.Row():
+            video_output = gr.Video(label="Processed Video")
+            alert_output = gr.Textbox(label="Alert", max_lines=10)
+            
+        with gr.Row():
+            crop_1 = gr.Image(label="Detection 1")
+            crop_2 = gr.Image(label="Detection 2")
+            crop_3 = gr.Image(label="Detection 3")
+            
+        # Add audio component with autoplay
+        audio_alert = gr.Audio(
+            label="Alert Sound",
+            streaming=True,
+            autoplay=True,
+            visible=False
+        )
+
         submit_btn = gr.Button("Process Video")
         submit_btn.click(
             fn=process_with_params,
             inputs=[video_input, camera_name],
-            outputs=[video_output, alert_output, crop_1, crop_2, crop_3]
+            outputs=[video_output, alert_output, crop_1, crop_2, crop_3, audio_alert]
         )
-    
+
     try:
         iface.launch(
-            server_name="0.0.0.0",
+            server_name="0.0.0.0", 
             server_port=7865,
-            share=False,
+            share=True,
             debug=True
         )
     except Exception as e:
