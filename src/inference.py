@@ -8,7 +8,7 @@ from collections import deque
 import numpy as np
 
 class AccidentDetector:
-    def __init__(self, model_path='models/weights/best.pt'):
+    def __init__(self, model_path='models/mustafa/best3.pt'):
         self.model = YOLO(model_path)
         self.base_path = "incidents"
         os.makedirs(self.base_path, exist_ok=True)

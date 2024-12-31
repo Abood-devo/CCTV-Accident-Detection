@@ -69,8 +69,8 @@ def main():
     try:
         iface.launch(
             server_name="0.0.0.0",
-            server_port=7860,
-            share=False,
+            server_port=7865,
+            share=True,
             debug=True
         )
     except Exception as e:

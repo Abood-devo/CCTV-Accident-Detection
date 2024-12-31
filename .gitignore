@@ -45,7 +45,7 @@ models/weights/*.onnx
 data/raw/
 data/processed/
 data/train/
-data/val/
+data/valid/
 data/test/
 !data/.gitkeep
 
