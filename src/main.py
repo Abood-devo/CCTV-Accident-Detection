@@ -29,7 +29,6 @@ def process_with_params(video, camera_name):
         crop1 = enhanced_crops[0] if enhanced_crops and len(enhanced_crops) > 0 else None
         crop2 = enhanced_crops[1] if enhanced_crops and len(enhanced_crops) > 1 else None
         crop3 = enhanced_crops[2] if enhanced_crops and len(enhanced_crops) > 2 else None
-        
         return video_output, alert, crop1, crop2, crop3, audio_alert
     finally:
         if detector:
@@ -59,21 +58,23 @@ def main():
             autoplay=True,
             visible=False
         )
-
+        # add a submit button
         submit_btn = gr.Button("Process Video")
         submit_btn.click(
             fn=process_with_params,
             inputs=[video_input, camera_name],
             outputs=[video_output, alert_output, crop_1, crop_2, crop_3, audio_alert]
         )
-
+        
     try:
+        
         iface.launch(
             server_name="0.0.0.0", 
             server_port=7865,
             share=True,
             debug=True
         )
+        # If you want to run the interface in a local server, set share=False
     except Exception as e:
         print(f"Error launching interface: {e}")
         iface.launch()
